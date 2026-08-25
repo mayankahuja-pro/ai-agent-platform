@@ -1,6 +1,17 @@
 import uuid
 
+from langchain_core.messages import (
+    messages_from_dict,
+    messages_to_dict,
+    HumanMessage,
+    AIMessage,
+)
+
 from app.agents.graph import agent_graph
+from app.services.redis_service import (
+    get_conversation,
+    save_conversation,
+)
 
 
 async def run_agent(
@@ -13,28 +24,56 @@ async def run_agent(
         or str(uuid.uuid4())
     )
 
+    previous_messages_raw = await get_conversation(
+        conversation_id
+    )
+
+    previous_messages = []
+    if previous_messages_raw:
+        try:
+            previous_messages = messages_from_dict(
+                previous_messages_raw
+            )
+        except Exception:
+            for msg in previous_messages_raw:
+                role = msg.get("role")
+                content = msg.get("content", "")
+                if role in ("user", "human"):
+                    previous_messages.append(
+                        HumanMessage(content=content)
+                    )
+                elif role in ("ai", "assistant"):
+                    previous_messages.append(
+                        AIMessage(content=content)
+                    )
+
+    messages = [
+        *previous_messages,
+        HumanMessage(content=message),
+    ]
+
     result = await agent_graph.ainvoke(
         {
-            "messages": [
-                {
-                    "role": "user",
-                    "content": message,
-                }
-            ],
+            "messages": messages,
             "tools_used": [],
         }
     )
 
-    messages = result["messages"]
+    final_messages = result["messages"]
+
+    last_message = final_messages[-1]
+
+    await save_conversation(
+        conversation_id,
+        messages_to_dict(final_messages),
+    )
 
     tools_used = []
 
-    for msg in messages:
+    for msg in final_messages:
 
         if hasattr(msg, "name") and msg.name:
             tools_used.append(msg.name)
-
-    last_message = messages[-1]
 
     return {
         "conversation_id": conversation_id,

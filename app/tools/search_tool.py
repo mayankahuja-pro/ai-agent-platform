@@ -1,29 +1,37 @@
 from langchain_core.tools import tool
 
+from app.services.rag_client import search_rag
+
 
 @tool
-def search_knowledge_base(
+async def search_knowledge_base(
     query: str,
 ) -> dict:
     """
-    Search the company's internal knowledge base.
-    Use this when the user asks about company policies,
-    documentation, procedures, or information that may
-    exist inside internal documents.
+    Search the internal company knowledge base.
+
+    Use this tool for:
+    - company policies
+    - documentation
+    - employee handbook information
+    - internal procedures
+    - information stored in company documents
+
+    Do not use this tool for order information
+    or mathematical calculations.
     """
 
-    # Temporary implementation.
-    # We will connect this to Project 1's pgvector
-    # retrieval pipeline in the next stage.
+    try:
 
-    return {
-        "query": query,
-        "results": [
-            {
-                "content": (
-                    "Internal knowledge base search "
-                    "will be connected to the RAG system."
-                )
-            }
-        ],
-    }
+        result = await search_rag(
+            query=query,
+            top_k=5,
+        )
+
+        return result
+
+    except Exception:
+
+        return {
+            "error": "Knowledge base is currently unavailable."
+        }

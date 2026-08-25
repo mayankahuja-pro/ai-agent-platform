@@ -11,12 +11,14 @@ from app.agents.state import AgentState
 from app.tools.calculator_tool import calculate
 from app.tools.order_tool import get_order
 from app.tools.search_tool import search_knowledge_base
+from app.tools.weather_tool import get_weather
 from app.agents.prompts import SYSTEM_PROMPT
 from langchain_core.messages import SystemMessage
 tools = [
 get_order,
 calculate,
 search_knowledge_base,
+get_weather,
 ]
 
 llm_with_tools = llm.bind_tools(tools)

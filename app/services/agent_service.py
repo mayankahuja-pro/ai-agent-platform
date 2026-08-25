@@ -25,13 +25,21 @@ async def run_agent(
         }
     )
 
-    last_message = result["messages"][-1]
+    messages = result["messages"]
+
+    tools_used = []
+
+    for msg in messages:
+
+        if hasattr(msg, "name") and msg.name:
+            tools_used.append(msg.name)
+
+    last_message = messages[-1]
 
     return {
         "conversation_id": conversation_id,
         "answer": last_message.content,
-        "tools_used": result.get(
-            "tools_used",
-            [],
+        "tools_used": list(
+            dict.fromkeys(tools_used)
         ),
     }

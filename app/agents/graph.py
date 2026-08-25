@@ -8,13 +8,14 @@ from langgraph.prebuilt import ToolNode
 
 from app.agents.llm import llm
 from app.agents.state import AgentState
+from app.tools.calculator_tool import calculate
 from app.tools.order_tool import get_order
 
 
 tools = [
-    get_order,
+get_order,
+calculate,
 ]
-
 
 llm_with_tools = llm.bind_tools(tools)
 

@@ -12,3 +12,5 @@ class AgentState(TypedDict):
     ]
 
     tools_used: list[str]
+
+    iterations: int

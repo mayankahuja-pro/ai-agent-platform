@@ -38,11 +38,17 @@ def agent_node(state: AgentState):
     )
 
     return {
-        "messages": [response]
+        "messages": [response],
+        "iterations": state.get(
+            "iterations",
+            0,
+        ) + 1,
     }
 
-
 def should_continue(state: AgentState):
+
+    if state.get("iterations", 0) >= 5:
+        return END
 
     last_message = state["messages"][-1]
 

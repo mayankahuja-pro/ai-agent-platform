@@ -56,6 +56,7 @@ async def run_agent(
         {
             "messages": messages,
             "tools_used": [],
+            "iterations": 0,
         }
     )
 

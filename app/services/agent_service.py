@@ -13,6 +13,9 @@ from app.services.redis_service import (
     save_conversation,
 )
 
+import logging
+
+logger = logging.getLogger(__name__)
 
 async def run_agent(
     message: str,
@@ -22,6 +25,11 @@ async def run_agent(
     conversation_id = (
         conversation_id
         or str(uuid.uuid4())
+    )
+
+    logger.info(
+        "Starting agent conversation=%s",
+        conversation_id,
     )
 
     previous_messages_raw = await get_conversation(
@@ -76,10 +84,15 @@ async def run_agent(
         if hasattr(msg, "name") and msg.name:
             tools_used.append(msg.name)
 
+    tools_used = list(dict.fromkeys(tools_used))
+    
+    logger.info(
+        "Agent completed conversation=%s tools=%s",
+        conversation_id,
+        tools_used,
+    )        
     return {
         "conversation_id": conversation_id,
         "answer": last_message.content,
-        "tools_used": list(
-            dict.fromkeys(tools_used)
-        ),
+        "tools_used": tools_used,
     }
